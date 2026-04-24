@@ -1,3 +1,32 @@
+# IDE / outils
 /.claude
 /.ruff_cache
 /.vscode
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+
+# Distribution / build
+build/
+dist/
+*.spec
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# Tests / cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Sorties matplotlib courantes
+*.png
+*.pdf
+*.svg

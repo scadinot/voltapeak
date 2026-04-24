@@ -14,7 +14,7 @@ Chaque évolution est caractérisée par :
 
 | Vague | Thème                       | Horizon           | Nb d'items |
 |-------|-----------------------------|-------------------|-----------|
-| 1     | Hygiène projet              | Court terme       | 5         |
+| 1     | Hygiène projet              | Court terme       | 7         |
 | 2     | Robustesse                  | Court / moyen     | 5         |
 | 3     | Fonctionnalités utilisateur | Moyen terme       | 5         |
 | 4     | Qualité logicielle          | Moyen / long      | 4         |
@@ -32,16 +32,16 @@ L'objectif est de poser les fondations minimales attendues de tout projet Python
 - **Motivation** : aujourd'hui l'installation repose sur un `pip install` manuel sans version figée — risque de régression si une des bibliothèques (notamment `pybaselines`, en évolution active) change de comportement.
 - **Livrable** :
   - ✅ [pyproject.toml](pyproject.toml) créé (PEP 621) avec section `[project]` et dépendances listées.
-  - ⏳ Reste à faire : figer les versions minimales / maximales (`numpy>=1.24,<3`, etc.) après validation en production.
-  - ⏳ Reste à faire : générer un `requirements.txt` verrouillé via `pip freeze` dans un environnement de référence.
+  - ⏳ **Seule action restante de la Vague 1** : figer les versions minimales / maximales (`numpy>=1.24,<3`, etc.) après validation en production, et générer un `requirements.txt` verrouillé via `pip freeze` dans un environnement de référence.
 - **Complexité** : **S**.
 - **Fichiers impactés** : [pyproject.toml](pyproject.toml), `requirements.txt` (à créer).
 
-### 1.2 Ajouter un `.gitignore` standard Python
+### 1.2 Ajouter un `.gitignore` standard Python ✅ *(fait)*
 
 - **Motivation** : éviter le suivi accidentel de `__pycache__/`, `.venv/`, `*.pyc`, fichiers IDE, exports matplotlib, etc.
+- **Statut** : ✅ [.gitignore](.gitignore) créé avec exclusions IDE (`/.claude`, `/.ruff_cache`, `/.vscode`) et patterns Python standard (`__pycache__/`, `*.py[cod]`, `*.egg-info/`, `.venv/`, `build/`, `dist/`, `.pytest_cache/`, `.mypy_cache/`, `*.png`, `*.pdf`, `*.svg`).
 - **Complexité** : **S**.
-- **Fichiers impactés** : `.gitignore` (nouveau).
+- **Fichiers impactés** : [.gitignore](.gitignore).
 
 ### 1.3 Supprimer les imports inutilisés ✅ *(fait)*
 
@@ -50,11 +50,12 @@ L'objectif est de poser les fondations minimales attendues de tout projet Python
 - **Complexité** : **S**.
 - **Fichiers impactés** : [voltapeak.py](voltapeak.py).
 
-### 1.4 Ajouter un fichier `LICENSE`
+### 1.4 Ajouter un fichier `LICENSE` ✅ *(fait)*
 
 - **Motivation** : sans licence explicite, le code est par défaut « tous droits réservés », ce qui bloque toute réutilisation et contribution. Nécessite un arbitrage avec le GROUPE TRACE sur la licence cible (propriétaire interne, MIT, Apache 2.0, etc.).
+- **Statut** : ✅ Fichier [LICENSE](LICENSE) ajouté — Licence **MIT**, copyright 2026 [@scadinot](https://github.com/scadinot). Pas d'en-tête de licence ajouté dans [voltapeak.py](voltapeak.py) (non requis par MIT, présence du fichier `LICENSE` à la racine du dépôt suffit).
 - **Complexité** : **S**.
-- **Fichiers impactés** : `LICENSE` (nouveau), en-tête éventuel à ajouter dans [voltapeak.py](voltapeak.py).
+- **Fichiers impactés** : [LICENSE](LICENSE).
 
 ### 1.5 Corriger l'annotation de retour de `readFile` ✅ *(fait)*
 
@@ -271,11 +272,13 @@ Rendre le logiciel utilisable par des non-développeurs.
 
 | Priorité | Items                             | Effort total   |
 |----------|-----------------------------------|----------------|
-| **P0**   | Vague 1 (1.1 → 1.5)               | ~1 jour        |
+| **P0**   | Finaliser Vague 1 (1.1 — figer versions deps)         | ~½ jour        |
 | **P1**   | Vague 2 (2.1, 2.2, 2.5)           | ~2-3 jours     |
 | **P2**   | Vague 3 (3.2, 3.3)                | ~3-5 jours     |
 | **P3**   | Vague 4 (4.1 → 4.4)               | ~1-2 semaines  |
 | **P4**   | Vague 3 (3.1, 3.4, 3.5) + Vague 5 | ~2 semaines    |
 | **P5**   | Vague 6                           | ~2-3 semaines  |
+
+> Items déjà livrés au moment de cette priorisation : Vague 1 sauf 1.1 (reste à figer les versions de dépendances).
 
 Cette priorisation est **indicative** — elle optimise le ratio valeur utilisateur / effort dans le contexte d'un outil interne GROUPE TRACE. Elle doit être réarbitrée selon les retours utilisateurs et les contraintes business.
