@@ -14,7 +14,7 @@ Chaque évolution est caractérisée par :
 
 | Vague | Thème                       | Horizon           | Nb d'items |
 |-------|-----------------------------|-------------------|-----------|
-| 1     | Hygiène projet              | Court terme       | 7         |
+| 1     | Hygiène projet              | Court terme       | 1         |
 | 2     | Robustesse                  | Court / moyen     | 5         |
 | 3     | Fonctionnalités utilisateur | Moyen terme       | 5         |
 | 4     | Qualité logicielle          | Moyen / long      | 4         |
@@ -27,60 +27,12 @@ Chaque évolution est caractérisée par :
 
 L'objectif est de poser les fondations minimales attendues de tout projet Python livré : verrou de dépendances, nettoyage du code, licence explicite.
 
-### 1.1 Créer `requirements.txt` et / ou `pyproject.toml` ✅ *(partiellement fait)*
+### 1.1 Figer les versions de dépendances et générer `requirements.txt`
 
-- **Motivation** : aujourd'hui l'installation repose sur un `pip install` manuel sans version figée — risque de régression si une des bibliothèques (notamment `pybaselines`, en évolution active) change de comportement.
-- **Livrable** :
-  - ✅ [pyproject.toml](pyproject.toml) créé (PEP 621) avec section `[project]` et dépendances listées.
-  - ⏳ **Seule action restante de la Vague 1** : figer les versions minimales / maximales (`numpy>=1.24,<3`, etc.) après validation en production, et générer un `requirements.txt` verrouillé via `pip freeze` dans un environnement de référence.
+- **Motivation** : [pyproject.toml](pyproject.toml) liste les dépendances mais sans contraintes de version figées — risque de régression si une des bibliothèques (notamment `pybaselines`, en évolution active) change de comportement.
+- **Livrable** : figer les versions minimales / maximales (`numpy>=1.24,<3`, etc.) après validation en production, et générer un `requirements.txt` verrouillé via `pip freeze` dans un environnement de référence.
 - **Complexité** : **S**.
 - **Fichiers impactés** : [pyproject.toml](pyproject.toml), `requirements.txt` (à créer).
-
-### 1.2 Ajouter un `.gitignore` standard Python ✅ *(fait)*
-
-- **Motivation** : éviter le suivi accidentel de `__pycache__/`, `.venv/`, `*.pyc`, fichiers IDE, exports matplotlib, etc.
-- **Statut** : ✅ [.gitignore](.gitignore) créé avec exclusions IDE (`/.claude`, `/.ruff_cache`, `/.vscode`) et patterns Python standard (`__pycache__/`, `*.py[cod]`, `*.egg-info/`, `.venv/`, `build/`, `dist/`, `.pytest_cache/`, `.mypy_cache/`, `*.png`, `*.pdf`, `*.svg`).
-- **Complexité** : **S**.
-- **Fichiers impactés** : [.gitignore](.gitignore).
-
-### 1.3 Supprimer les imports inutilisés ✅ *(fait)*
-
-- **Motivation** : [voltapeak.py](voltapeak.py) importait `re`, `platform` et `subprocess` sans les utiliser. Ces imports déclenchaient 3 warnings `F401` sur tous les linters.
-- **Statut** : ✅ Retirés du fichier. Warnings `F401` résolus.
-- **Complexité** : **S**.
-- **Fichiers impactés** : [voltapeak.py](voltapeak.py).
-
-### 1.4 Ajouter un fichier `LICENSE` ✅ *(fait)*
-
-- **Motivation** : sans licence explicite, le code est par défaut « tous droits réservés », ce qui bloque toute réutilisation et contribution. Nécessite un arbitrage avec le GROUPE TRACE sur la licence cible (propriétaire interne, MIT, Apache 2.0, etc.).
-- **Statut** : ✅ Fichier [LICENSE](LICENSE) ajouté — Licence **MIT**, copyright 2026 [@scadinot](https://github.com/scadinot). Pas d'en-tête de licence ajouté dans [voltapeak.py](voltapeak.py) (non requis par MIT, présence du fichier `LICENSE` à la racine du dépôt suffit).
-- **Complexité** : **S**.
-- **Fichiers impactés** : [LICENSE](LICENSE).
-
-### 1.5 Corriger l'annotation de retour de `readFile` ✅ *(fait)*
-
-- **Motivation** : la signature d'origine
-  ```python
-  def readFile(filePath, sep, decimal) -> (pd.DataFrame|None):
-  ```
-  utilisait des parenthèses superflues autour du type d'union. Syntaxiquement valide (Python parse `(X)` comme une expression), mais atypique.
-- **Statut** : ✅ Remplacée par `-> pd.DataFrame | None`. Annotations `processData` et `getPeakValue` paramétrées en parallèle (`-> tuple[np.ndarray, np.ndarray]` et `-> tuple[float, float]`).
-- **Complexité** : **S**.
-- **Fichiers impactés** : [voltapeak.py](voltapeak.py).
-
-### 1.6 Corriger la variable non utilisée `yPeakCurrent` ✅ *(fait)*
-
-- **Motivation** : dans [`processAndPlotSingleFile`](voltapeak.py), l'appel à `getPeakValue` sur le signal brut unpacke `(xPeakVoltage, yPeakCurrent)` mais seule l'abscisse sert à la suite (calage de la zone d'exclusion). Déclenchait un warning `F841`.
-- **Statut** : ✅ Remplacé par `xPeakVoltage, _ = getPeakValue(...)` avec commentaire explicatif.
-- **Complexité** : **S**.
-- **Fichiers impactés** : [voltapeak.py](voltapeak.py).
-
-### 1.7 Configurer les linters pour tolérer le camelCase ✅ *(fait)*
-
-- **Motivation** : le projet utilise volontairement le camelCase pour fonctions et variables (cohérence interne). Les règles `N802/N803/N806` (pep8-naming) et `C0103` (pylint) produisent alors des dizaines de faux positifs qui noient les vraies erreurs.
-- **Statut** : ✅ Section `[tool.ruff]`, `[tool.pylint.main]` et `[tool.mypy]` ajoutées dans [pyproject.toml](pyproject.toml). Règles de nommage non sélectionnées (ruff) ou désactivées (pylint). `line-length` fixée à 120.
-- **Complexité** : **S**.
-- **Fichiers impactés** : [pyproject.toml](pyproject.toml).
 
 ---
 
@@ -278,7 +230,5 @@ Rendre le logiciel utilisable par des non-développeurs.
 | **P3**   | Vague 4 (4.1 → 4.4)               | ~1-2 semaines  |
 | **P4**   | Vague 3 (3.1, 3.4, 3.5) + Vague 5 | ~2 semaines    |
 | **P5**   | Vague 6                           | ~2-3 semaines  |
-
-> Items déjà livrés au moment de cette priorisation : Vague 1 sauf 1.1 (reste à figer les versions de dépendances).
 
 Cette priorisation est **indicative** — elle optimise le ratio valeur utilisateur / effort dans le contexte d'un outil interne GROUPE TRACE. Elle doit être réarbitrée selon les retours utilisateurs et les contraintes business.
