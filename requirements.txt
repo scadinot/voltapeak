@@ -1,0 +1,8 @@
+# Dépendances installées au moment du gel (compatible-release : permet les
+# patch updates uniquement). Mettre à jour via `py -m pip freeze` quand
+# l'environnement de référence change.
+matplotlib~=3.10.9
+numpy~=2.4.4
+pandas~=3.0.2
+pybaselines~=1.2.1
+scipy~=1.17.1
