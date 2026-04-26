@@ -1,0 +1,5 @@
+{
+    "pythonVersion": "3.10",
+    "reportPrivateImportUsage": "none",
+    "reportMissingTypeStubs": "none"
+}

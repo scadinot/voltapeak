@@ -24,28 +24,27 @@ réels des utilisateurs.
 
 ## Court terme — qualité de base du projet
 
-### 1. Figer les versions de dépendances ✅ *(partiellement fait)*
+### 1. Figer les versions de dépendances ✅ *(fait)*
 
-**Motivation.** [pyproject.toml](pyproject.toml) liste les dépendances
-(`numpy`, `pandas`, `matplotlib`, `scipy`, `pybaselines`) sans
-contraintes de version. Une mise à jour majeure d'une bibliothèque —
-notamment `pybaselines`, en évolution active — peut modifier
-silencieusement les résultats numériques d'une exécution à l'autre.
+**Motivation.** Le projet utilisait à l'origine `pip install` direct
+sur les noms de paquets (`numpy`, `pandas`, `matplotlib`, `scipy`,
+`pybaselines`) sans contraintes de version. Une mise à jour majeure
+d'une bibliothèque — notamment `pybaselines`, en évolution active —
+pouvait modifier silencieusement les résultats numériques d'une
+exécution à l'autre.
 
 **Statut.** ✅ [requirements.txt](requirements.txt) verrouille les 5
 dépendances directes au niveau patch (`~=X.Y.Z`, PEP 440 compatible
 release) à partir des versions installées en environnement de
 référence — autorise les correctifs de sécurité (patch) mais bloque
 les changements mineurs/majeurs susceptibles de casser les calculs.
-
-⏳ **Reste à faire** : ajouter des bornes dans `[project] dependencies`
-de [pyproject.toml](pyproject.toml) (`numpy>=2.4,<3`,
-`pybaselines>=1.2,<2`, etc.) pour que les futurs `pip install .` ne
-remontent pas non plus à des majors incompatibles.
+L'installation se fait par `pip install -r requirements.txt`. Le
+projet n'ayant plus de `pyproject.toml` (cf. item 2 sur la structure),
+il n'y a plus de `[project] dependencies` à harmoniser.
 
 ### 2. Extraire le code en modules
 
-**Motivation.** Les ~760 lignes de [voltapeak.py](voltapeak.py)
+**Motivation.** Les ~760 lignes de [__main__.py](__main__.py)
 mélangent traitement scientifique (`readFile`, `processData`,
 `smoothSignal`, `getPeakValue`, `calculateSignalBaseLine`), génération
 de graphique (`plotSignalAnalysis`) et interface graphique
@@ -53,21 +52,25 @@ de graphique (`plotSignalAnalysis`) et interface graphique
 d'importer l'algorithme sans lancer Tkinter) et rend les tests
 difficiles.
 
+**État actuel.** Le projet est déjà un mini-package
+(`__init__.py` + `__main__.py`), exécutable par `python -m voltapeak`.
+Le code n'est pas encore éclaté en sous-modules.
+
 **Piste technique.** Éclater en :
 ```
 voltapeak/
-├── __init__.py
+├── __init__.py    # version, ré-exports
 ├── core.py        # readFile, processData, smoothSignal,
 │                  # getPeakValue, calculateSignalBaseLine
 ├── plotting.py    # plotSignalAnalysis (sans backend Tk)
 ├── gui.py         # launch_gui (Tkinter)
-└── __main__.py    # python -m voltapeak
+└── __main__.py    # délègue à gui.main / core.main
 ```
 
 ### 3. Remplacer les `messagebox` génériques par `logging`
 
 **Motivation.** Toute exception du pipeline est aujourd'hui capturée
-dans [`processAndPlotSingleFile`](voltapeak.py) et affichée dans une
+dans [`processAndPlotSingleFile`](__main__.py) et affichée dans une
 boîte de dialogue Tk avec un message identique pour des causes très
 différentes. Aucune trace n'est conservée — impossible de comprendre a
 posteriori quels paramètres ont été appliqués (fenêtre Savitzky-Golay
@@ -85,15 +88,15 @@ GUI pour le retour utilisateur immédiat.
 
 ### 4. Gestion d'erreurs typée
 
-**Motivation.** [`readFile`](voltapeak.py) ne capture aucune exception
+**Motivation.** [`readFile`](__main__.py) ne capture aucune exception
 spécifique. `FileNotFoundError`, `UnicodeDecodeError` et
 `pandas.errors.ParserError` remontent jusqu'au `except Exception`
-global de [`processAndPlotSingleFile`](voltapeak.py), qui affiche un
+global de [`processAndPlotSingleFile`](__main__.py), qui affiche un
 message générique. L'utilisateur ne sait pas si le problème vient du
 chemin, de l'encodage ou du séparateur. De même, le DataFrame n'est
 pas validé après lecture : un fichier à une seule colonne ou à
 colonnes textuelles produit une erreur tardive et peu parlante dans
-[`processData`](voltapeak.py) ou [`smoothSignal`](voltapeak.py).
+[`processData`](__main__.py) ou [`smoothSignal`](__main__.py).
 
 **Piste technique.** Définir `InvalidSWVFileError`, `EncodingError`,
 `PeakNotFoundError`, `BaselineEstimationError` héritant de `SWVError`.
@@ -118,7 +121,7 @@ floats. La GUI conserve le choix manuel comme override.
 ### 6. Encodage configurable
 
 **Motivation.** L'encodage est figé à `latin-1` dans
-[`readFile`](voltapeak.py). Les exports récents (notamment Autolab
+[`readFile`](__main__.py). Les exports récents (notamment Autolab
 Nova 2.x) sont souvent en UTF-8. Un fichier UTF-8 avec BOM produit une
 lecture bancale silencieuse — les caractères accentués mal lus, sans
 erreur visible jusqu'à ce qu'une ligne de données contienne un
@@ -131,9 +134,9 @@ défaut : détection automatique via `charset-normalizer` ou repli sur
 
 ### 7. Exposer les hyperparamètres dans l'UI
 
-**Motivation.** [`marginRatio`](voltapeak.py),
-[`maxSlope`](voltapeak.py), [`exclusionWidthRatio`](voltapeak.py),
-[`lambdaFactor`](voltapeak.py), `window_length` et `polyorder` sont
+**Motivation.** [`marginRatio`](__main__.py),
+[`maxSlope`](__main__.py), [`exclusionWidthRatio`](__main__.py),
+[`lambdaFactor`](__main__.py), `window_length` et `polyorder` sont
 figés dans le code. Tout scientifique qui veut adapter l'outil à une
 nouvelle expérience doit éditer le source — non viable en production.
 
@@ -148,8 +151,8 @@ nouvelle expérience doit éditer le source — non viable en production.
 ### 8. Tests unitaires et de non-régression
 
 **Motivation.** Aucun garde-fou automatisé aujourd'hui. Une régression
-sur [`getPeakValue`](voltapeak.py) ou
-[`calculateSignalBaseLine`](voltapeak.py) — par exemple lors d'une
+sur [`getPeakValue`](__main__.py) ou
+[`calculateSignalBaseLine`](__main__.py) — par exemple lors d'une
 mise à jour de `pybaselines` — passerait inaperçue jusqu'à la
 prochaine analyse litigieuse.
 
@@ -199,7 +202,7 @@ obstacle à l'adoption.
 
 **Piste technique.**
 - **Exécutable Windows** via PyInstaller
-  (`pyinstaller --onefile --windowed voltapeak.py`) : un seul `.exe`
+  (`pyinstaller --onefile --windowed __main__.py`) : un seul `.exe`
   double-cliquable. Documentation du processus dans `BUILD.md`.
 - **Installateur MSI/NSIS** avec raccourci menu Démarrer + bureau,
   association optionnelle `.txt` → voltapeak.
@@ -234,7 +237,7 @@ baselines concurrentes côte à côte sur le PNG.
 
 ### 14. Détection multi-pics
 
-**Motivation.** [`getPeakValue`](voltapeak.py) ne détecte que le
+**Motivation.** [`getPeakValue`](__main__.py) ne détecte que le
 maximum global de la zone centrale. Les signaux SWV peuvent présenter
 **plusieurs espèces électroactives** → plusieurs pics d'intérêt
 (typiquement 2 à 4).
@@ -311,7 +314,7 @@ Idées à évaluer au cas par cas, sans priorité ferme.
   lignes du fichier sélectionné pour vérifier que les séparateurs
   sont corrects avant de lancer le pipeline.
 - **Polices du graphique** : `fontsize=4` (codé dans
-  [`plotSignalAnalysis`](voltapeak.py)) est lisible en figure
+  [`plotSignalAnalysis`](__main__.py)) est lisible en figure
   exportée mais incongru à l'écran. Ajouter une option ou détecter le
   contexte (intégré GUI vs export PNG).
 
@@ -319,7 +322,7 @@ Idées à évaluer au cas par cas, sans priorité ferme.
 
 - **Lazy-loading de matplotlib** : l'import top-level est lent et
   inutile tant que l'utilisateur n'a pas chargé un fichier. Déplacer
-  l'import dans [`plotSignalAnalysis`](voltapeak.py).
+  l'import dans [`plotSignalAnalysis`](__main__.py).
 - **Cache** : ne pas retraiter un fichier dont le hash SHA-256 n'a
   pas changé depuis la dernière exécution.
 
@@ -327,7 +330,7 @@ Idées à évaluer au cas par cas, sans priorité ferme.
 
 - **Gestion des balayages aller-retour** (cyclic SWV) : l'inversion
   systématique du signe (`-Current` dans
-  [`processData`](voltapeak.py)) pourrait être mal adaptée si la
+  [`processData`](__main__.py)) pourrait être mal adaptée si la
   première demi-vague est anodique.
 - **Diagnostics de parsing plus fins** : aujourd'hui un
   `pandas.errors.ParserError` produit un message générique ; un

@@ -1,0 +1,19 @@
+# -----------------------------------------------------------------------------
+# .pylintrc — Configuration Pylint (format INI).
+#
+# Extrait de l'ancien `[tool.pylint.*]` de pyproject.toml. En INI, les
+# noms de section deviennent MAIN / FORMAT / etc. (en majuscules).
+#
+# Mêmes tolérances que ruff : camelCase assumé pour les noms de fonctions,
+# variables, arguments (cohérence avec les conventions internes GROUPE TRACE).
+# -----------------------------------------------------------------------------
+
+[MAIN]
+# Les codes ci-dessous correspondent aux règles pylint à désactiver.
+disable=C0103,
+        C0301
+# C0103 : invalid-name — fonctions / variables hors snake_case.
+# C0301 : line-too-long — cohérent avec ruff (line-length=120).
+
+[FORMAT]
+max-line-length=120

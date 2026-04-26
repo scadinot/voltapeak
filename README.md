@@ -75,7 +75,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-> [requirements.txt](requirements.txt) verrouille les versions au niveau patch (`~=X.Y.Z`) — reproductibilité garantie sur les correctifs de sécurité, sans casse possible sur un changement mineur ou majeur. La déclaration abstraite reste dans [pyproject.toml](pyproject.toml) ; le passage à des bornes `>=,<` dans ce dernier reste prévu (cf. [ROADMAP](ROADMAP.md) item 1.1).
+> [requirements.txt](requirements.txt) verrouille les versions au niveau patch (`~=X.Y.Z`) — reproductibilité garantie sur les correctifs de sécurité, sans casse possible sur un changement mineur ou majeur. Le projet n'a pas de `pyproject.toml` : la configuration de chaque outil de lint / typecheck vit dans son fichier dédié ([ruff.toml](ruff.toml), [.pylintrc](.pylintrc), [mypy.ini](mypy.ini), [pyrightconfig.json](pyrightconfig.json)).
 
 ### 3. Vérifier l'installation
 
@@ -89,10 +89,10 @@ Aucune sortie = installation correcte.
 
 ## Utilisation
 
-Depuis le dossier contenant [voltapeak.py](voltapeak.py) :
+Depuis le dossier **parent** du dossier `voltapeak/` :
 
 ```bash
-python voltapeak.py
+python -m voltapeak
 ```
 
 Puis dans l'interface :
@@ -197,19 +197,19 @@ Potentiel;Courant
 
 ## Architecture du code
 
-Tout le code tient dans un unique module [voltapeak.py](voltapeak.py).
+Le projet est un petit package Python : tout le code métier tient dans [__main__.py](__main__.py) (chargé par `python -m voltapeak`), et [__init__.py](__init__.py) se contente d'exposer la version (`voltapeak.__version__`).
 
 | Fonction                                                     | Rôle                                                                   |
 |--------------------------------------------------------------|------------------------------------------------------------------------|
-| [`readFile`](voltapeak.py#L83)                              | Charge le fichier texte en DataFrame (encodage latin-1, 2 colonnes).   |
-| [`processData`](voltapeak.py#L138)                          | Filtre, trie, inverse le signe du courant.                             |
-| [`smoothSignal`](voltapeak.py#L180)                         | Lissage Savitzky-Golay avec fenêtre adaptative.                        |
-| [`getPeakValue`](voltapeak.py#L232)                         | Détecte le maximum avec marge de bords + filtre de pente.              |
-| [`calculateSignalBaseLine`](voltapeak.py#L298)              | Estime la ligne de base par asPLS avec exclusion autour du pic.        |
-| [`plotSignalAnalysis`](voltapeak.py#L390)                   | Trace brut / lissé / baseline / corrigé / pic sur un axe matplotlib.   |
-| [`processAndPlotSingleFile`](voltapeak.py#L477)             | Orchestre tout le pipeline et rafraîchit le canvas Tk.                 |
-| [`launch_gui`](voltapeak.py#L593)                           | Construit la fenêtre Tk et sa boucle d'événements.                     |
-| [`main`](voltapeak.py#L760)                                 | Point d'entrée — délègue à `launch_gui`.                               |
+| [`readFile`](__main__.py#L83)                                | Charge le fichier texte en DataFrame (encodage latin-1, 2 colonnes).   |
+| [`processData`](__main__.py#L138)                            | Filtre, trie, inverse le signe du courant.                             |
+| [`smoothSignal`](__main__.py#L180)                           | Lissage Savitzky-Golay avec fenêtre adaptative.                        |
+| [`getPeakValue`](__main__.py#L232)                           | Détecte le maximum avec marge de bords + filtre de pente.              |
+| [`calculateSignalBaseLine`](__main__.py#L298)                | Estime la ligne de base par asPLS avec exclusion autour du pic.        |
+| [`plotSignalAnalysis`](__main__.py#L390)                     | Trace brut / lissé / baseline / corrigé / pic sur un axe matplotlib.   |
+| [`processAndPlotSingleFile`](__main__.py#L477)               | Orchestre tout le pipeline et rafraîchit le canvas Tk.                 |
+| [`launch_gui`](__main__.py#L593)                             | Construit la fenêtre Tk et sa boucle d'événements.                     |
+| [`main`](__main__.py#L760)                                   | Point d'entrée — délègue à `launch_gui`.                               |
 
 > Les numéros de ligne sont indicatifs et peuvent évoluer au fil des modifications.
 

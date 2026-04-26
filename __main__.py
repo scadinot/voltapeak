@@ -35,9 +35,9 @@ Dépendances
 
 Point d'entrée
 --------------
-Exécuter directement le module :
+Le package est exécutable depuis son dossier parent :
 
-    python voltapeak.py
+    python -m voltapeak
 
 Voir aussi
 ----------
