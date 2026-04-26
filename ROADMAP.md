@@ -24,7 +24,7 @@ réels des utilisateurs.
 
 ## Court terme — qualité de base du projet
 
-### 1. Figer les versions de dépendances
+### 1. Figer les versions de dépendances ✅ *(partiellement fait)*
 
 **Motivation.** [pyproject.toml](pyproject.toml) liste les dépendances
 (`numpy`, `pandas`, `matplotlib`, `scipy`, `pybaselines`) sans
@@ -32,10 +32,16 @@ contraintes de version. Une mise à jour majeure d'une bibliothèque —
 notamment `pybaselines`, en évolution active — peut modifier
 silencieusement les résultats numériques d'une exécution à l'autre.
 
-**Piste technique.** Ajouter des bornes dans `[project] dependencies`
-(`numpy>=1.24,<3`, `pybaselines>=1.0,<2`, etc.) après validation en
-environnement de référence ; générer en parallèle un `requirements.txt`
-verrouillé via `pip freeze` pour la reproductibilité stricte.
+**Statut.** ✅ [requirements.txt](requirements.txt) verrouille les 5
+dépendances directes au niveau patch (`~=X.Y.Z`, PEP 440 compatible
+release) à partir des versions installées en environnement de
+référence — autorise les correctifs de sécurité (patch) mais bloque
+les changements mineurs/majeurs susceptibles de casser les calculs.
+
+⏳ **Reste à faire** : ajouter des bornes dans `[project] dependencies`
+de [pyproject.toml](pyproject.toml) (`numpy>=2.4,<3`,
+`pybaselines>=1.2,<2`, etc.) pour que les futurs `pip install .` ne
+remontent pas non plus à des majors incompatibles.
 
 ### 2. Extraire le code en modules
 

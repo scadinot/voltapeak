@@ -72,10 +72,10 @@ source .venv/bin/activate
 ### 2. Installer les dépendances
 
 ```bash
-pip install numpy pandas matplotlib scipy pybaselines
+pip install -r requirements.txt
 ```
 
-> Le fichier [pyproject.toml](pyproject.toml) liste les dépendances. Le **verrouillage des versions** (`requirements.txt` ou contraintes `>=,<`) reste prévu en Vague 1.1 du [ROADMAP](ROADMAP.md).
+> [requirements.txt](requirements.txt) verrouille les versions au niveau patch (`~=X.Y.Z`) — reproductibilité garantie sur les correctifs de sécurité, sans casse possible sur un changement mineur ou majeur. La déclaration abstraite reste dans [pyproject.toml](pyproject.toml) ; le passage à des bornes `>=,<` dans ce dernier reste prévu (cf. [ROADMAP](ROADMAP.md) item 1.1).
 
 ### 3. Vérifier l'installation
 
@@ -201,15 +201,15 @@ Tout le code tient dans un unique module [voltapeak.py](voltapeak.py).
 
 | Fonction                                                     | Rôle                                                                   |
 |--------------------------------------------------------------|------------------------------------------------------------------------|
-| [`readFile`](voltapeak.py#L82)                              | Charge le fichier texte en DataFrame (encodage latin-1, 2 colonnes).   |
-| [`processData`](voltapeak.py#L137)                          | Filtre, trie, inverse le signe du courant.                             |
-| [`smoothSignal`](voltapeak.py#L179)                         | Lissage Savitzky-Golay avec fenêtre adaptative.                        |
-| [`getPeakValue`](voltapeak.py#L231)                         | Détecte le maximum avec marge de bords + filtre de pente.              |
-| [`calculateSignalBaseLine`](voltapeak.py#L297)              | Estime la ligne de base par asPLS avec exclusion autour du pic.        |
-| [`plotSignalAnalysis`](voltapeak.py#L389)                   | Trace brut / lissé / baseline / corrigé / pic sur un axe matplotlib.   |
-| [`processAndPlotSingleFile`](voltapeak.py#L476)             | Orchestre tout le pipeline et rafraîchit le canvas Tk.                 |
-| [`launch_gui`](voltapeak.py#L592)                           | Construit la fenêtre Tk et sa boucle d'événements.                     |
-| [`main`](voltapeak.py#L759)                                 | Point d'entrée — délègue à `launch_gui`.                               |
+| [`readFile`](voltapeak.py#L83)                              | Charge le fichier texte en DataFrame (encodage latin-1, 2 colonnes).   |
+| [`processData`](voltapeak.py#L138)                          | Filtre, trie, inverse le signe du courant.                             |
+| [`smoothSignal`](voltapeak.py#L180)                         | Lissage Savitzky-Golay avec fenêtre adaptative.                        |
+| [`getPeakValue`](voltapeak.py#L232)                         | Détecte le maximum avec marge de bords + filtre de pente.              |
+| [`calculateSignalBaseLine`](voltapeak.py#L298)              | Estime la ligne de base par asPLS avec exclusion autour du pic.        |
+| [`plotSignalAnalysis`](voltapeak.py#L390)                   | Trace brut / lissé / baseline / corrigé / pic sur un axe matplotlib.   |
+| [`processAndPlotSingleFile`](voltapeak.py#L477)             | Orchestre tout le pipeline et rafraîchit le canvas Tk.                 |
+| [`launch_gui`](voltapeak.py#L593)                           | Construit la fenêtre Tk et sa boucle d'événements.                     |
+| [`main`](voltapeak.py#L760)                                 | Point d'entrée — délègue à `launch_gui`.                               |
 
 > Les numéros de ligne sont indicatifs et peuvent évoluer au fil des modifications.
 
