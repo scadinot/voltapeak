@@ -59,6 +59,7 @@ from tkinter import Button, Frame, Label, StringVar, Tk, filedialog, messagebox,
 # Bibliothèques tierces — `import X as Y` d'abord, puis les `from X import Y`.
 import matplotlib.pyplot as plt  # API pyplot pour construire la figure.
 import numpy as np  # Calcul vectoriel (gradient, argmax, etc.).
+from numpy.typing import NDArray
 import pandas as pd  # Lecture CSV/TXT, tri, filtrage par colonne.
 
 # Canvas et barre d'outils matplotlib spécifiques au backend Tkinter :
@@ -176,7 +177,7 @@ def processData(dataFrame) -> tuple[np.ndarray, np.ndarray]:
     return potentialValues, signalValues
 
 
-def smoothSignal(signalValues) -> np.ndarray:
+def smoothSignal(signalValues: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Lisse le signal par filtre de Savitzky-Golay.
 
@@ -225,7 +226,7 @@ def smoothSignal(signalValues) -> np.ndarray:
         window_length = 3
     # polyorder=2 : parabole locale — préserve correctement la courbure
     # d'un pic gaussien/lorentzien sans l'aplatir.
-    return savgol_filter(signalValues, window_length=window_length, polyorder=2)
+    return np.asarray(savgol_filter(signalValues, window_length=window_length, polyorder=2))
 
 
 def getPeakValue(signalValues, potentialValues, marginRatio=0.10, maxSlope=None) -> tuple[float, float]:
