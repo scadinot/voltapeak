@@ -1,6 +1,6 @@
 # voltapeak
 
-Outil graphique (Tkinter) d'**analyse interactive d'un fichier de voltammétrie à vagues carrées** (SWV — *Square Wave Voltammetry*), avec correction automatique de ligne de base par l'algorithme **asPLS Whittaker** et détection robuste du pic anodique.
+Outil graphique (Tkinter) d'**analyse interactive d'un fichier de voltammétrie à vagues carrées** (SWV — *Square Wave Voltammetry*), avec correction automatique de ligne de base par l'algorithme **asPLS Whittaker** et détection robuste du pic cathodique.
 
 ---
 
@@ -37,6 +37,8 @@ Pour exploiter le pic, il faut :
 
 - **Savitzky-Golay** pour le lissage (convolution polynomiale locale) ;
 - **asPLS Whittaker** (*asymmetric Penalized Least Squares*, bibliothèque [`pybaselines`](https://pybaselines.readthedocs.io/)) pour l'estimation robuste de la baseline, avec une pondération réduite autour du pic afin d'éviter que la baseline ne « suive » et n'efface le pic.
+
+> **Convention de signe.** Le pipeline est calibré pour des **SWV cathodiques** : `processData` inverse systématiquement le signe du courant avant `argmax`, donc le pic doit apparaître **en courant négatif** dans le fichier d'entrée. Un fichier où le pic est déjà en courant positif (orientation anodique) sera mal traité — il faut alors inverser la colonne en amont.
 
 `voltapeak` cible l'**exploration interactive d'un seul fichier** : la figure est affichée dans une fenêtre matplotlib zoomable, idéale pour qualifier visuellement un signal, régler l'œil sur la détection ou préparer une figure pour un rapport. Les traitements par lot sont assurés par les projets frères [`voltapeak_batch`](https://github.com/scadinot/voltapeak_batch) et [`voltapeak_loops`](https://github.com/scadinot/voltapeak_loops).
 
@@ -86,7 +88,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-> [`requirements.txt`](requirements.txt) verrouille les versions au niveau patch (`~=X.Y.Z`) — reproductibilité garantie sur les correctifs de sécurité, sans casse possible sur un changement mineur ou majeur. Le projet n'a pas de `pyproject.toml` : la configuration de chaque outil de lint / typecheck vit dans son fichier dédié ([`ruff.toml`](ruff.toml), [`.pylintrc`](.pylintrc), [`mypy.ini`](mypy.ini), [`pyrightconfig.json`](pyrightconfig.json)).
+> [`requirements.txt`](requirements.txt) borne les mises à jour aux versions de patch (`~=X.Y.Z`) : un `pip install` ultérieur peut prendre un correctif plus récent, mais ne franchira jamais un changement de version mineur ou majeur susceptible de casser le code. Pour une reproductibilité stricte (mêmes versions exactes sur toutes les machines, dans le temps), figer les versions (`==X.Y.Z`) ou ajouter un lock file (`pip-tools`, `uv`). Le projet n'a pas de `pyproject.toml` : la configuration de chaque outil de lint / typecheck vit dans son fichier dédié ([`ruff.toml`](ruff.toml), [`.pylintrc`](.pylintrc), [`mypy.ini`](mypy.ini), [`pyrightconfig.json`](pyrightconfig.json)).
 
 ---
 
@@ -109,7 +111,7 @@ python -m voltapeak
 | Nombre de colonnes       | ≥ 2 (seules les 2 premières sont lues)                       |
 | Première ligne           | en-tête — **ignorée** (`skiprows=1`)                         |
 | Colonne 1                | Potentiel en volts (float)                                   |
-| Colonne 2                | Courant en ampères (float, signe indifférent)                |
+| Colonne 2                | Courant en ampères — **pic attendu en valeur négative** (convention SWV cathodique : le pipeline inverse le signe avant `argmax`) |
 | Séparateur de colonnes   | configurable : tabulation / virgule / point-virgule / espace |
 | Séparateur décimal       | configurable : point / virgule                               |
 | Nombre minimal de lignes | 5 (pour permettre le lissage)                                |
@@ -263,8 +265,8 @@ main()
 |---|---|---|
 | Boîte d'erreur **« Trop peu de points pour lisser le signal. »** | Moins de 5 lignes de données après filtrage. | Vérifier que le séparateur de colonnes est correct (sinon tout est lu comme une seule colonne). |
 | Graphique affichant une ligne horizontale / pas de pic | Colonne de courant à 0 après lecture, ou mauvais séparateur décimal. | Vérifier le séparateur décimal ; ouvrir le fichier dans un éditeur pour confirmer la structure. |
+| Pic « inversé » ou détecté loin du sommet visible | Fichier avec pic déjà en courant positif (orientation anodique) | Pré-inverser la colonne courant en amont — le pipeline attend une convention cathodique (cf. [Format des fichiers d'entrée](#format-des-fichiers-dentrée)). |
 | **« Fichier invalide »** ou erreur de parsing | Mauvais séparateur de colonnes. | Changer le bouton radio *Séparateur de colonnes* et refaire **Parcourir**. |
-| Erreur `UnicodeDecodeError` | Fichier en UTF-8 avec BOM ou caractères non latin-1. | Convertir temporairement le fichier en latin-1. Encodage configurable prévu en feuille de route. |
 | Pic marqué clairement décalé du sommet visible | Filtre de pente `maxSlope=500` trop strict, fronts détectés. | Vérifier la qualité du signal ; exposition de `maxSlope` dans l'UI prévue en feuille de route. |
 | La fenêtre ne s'ouvre pas sous Linux | Tkinter non installé. | `sudo apt install python3-tk` (Debian / Ubuntu). |
 
