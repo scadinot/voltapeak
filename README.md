@@ -6,7 +6,7 @@ Outil graphique (Tkinter) d'**analyse interactive d'un fichier de voltammétrie 
 
 ## Table des matières
 
-1. [À quoi sert cet outil ?](#à-quoi-sert-cet-outil-)
+1. [À quoi sert cet outil ?](#à-quoi-sert-cet-outil)
 2. [Fonctionnalités](#fonctionnalités)
 3. [Prérequis](#prérequis)
 4. [Installation](#installation)
@@ -114,7 +114,7 @@ python -m voltapeak
 | Colonne 2                | Courant en ampères — **pic attendu en valeur négative** (convention SWV cathodique : le pipeline inverse le signe avant `argmax`) |
 | Séparateur de colonnes   | configurable : tabulation / virgule / point-virgule / espace |
 | Séparateur décimal       | configurable : point / virgule                               |
-| Nombre minimal de lignes | 5 (pour permettre le lissage)                                |
+| Nombre minimal de lignes | 5 (en dessous, `smoothSignal` lève « Trop peu de points pour lisser le signal. ») |
 
 Exemple (tabulation, point décimal) :
 
